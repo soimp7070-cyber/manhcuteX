@@ -1,0 +1,274 @@
+import os
+from time import sleep
+from datetime import datetime
+import webbrowser  # thêm để mở link trên mọi nền tảng
+
+os.environ['TZ'] = 'Asia/Ho_Chi_Minh'
+try:
+    import requests
+except:
+    os.system("pip3 install requests")
+    import requests
+
+try:
+    from pystyle import Colors, Colorate, Write, Center, Add, Box
+except:
+    os.system("pip3 install pystyle")
+    from pystyle import Colors, Colorate, Write, Center, Add, Box
+
+headers = {
+    'authority': 'traodoisub.com',
+    'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+    'accept-language': 'en-US,en;q=0.9,vi;q=0.8',
+    'user-agent': 'traodoisub tiktok tool',
+}
+
+def login_tds(token):
+    try:
+        r = requests.get('https://traodoisub.com/api/?fields=profile&access_token='+token, headers=headers, timeout=5).json()
+        if 'success' in r:
+            os.system('clear')
+            print(Colors.green + f"Đăng nhập thành công!\nUser: {Colors.yellow + r['data']['user'] + Colors.green} | Xu hiện tại: {Colors.yellow + r['data']['xu']}")
+            return 'success'
+        else:
+            print(Colors.red + f"Token TDS không hợp lệ, hãy kiểm tra lại!\n")
+            return 'error_token'
+    except:
+        return 'error'
+
+def load_job(type_job, token):
+    try:
+        r = requests.get('https://traodoisub.com/api/?fields='+type_job+'&access_token='+token, headers=headers, timeout=5).json()
+        if 'data' in r:
+            return r
+        elif "countdown" in r:
+            sleep(round(r['countdown']))
+            print(Colors.red + f"{r['error']}\n")
+            return 'error_countdown'
+        else:
+            print(Colors.red + f"{r['error']}\n")
+            return 'error_error'
+    except:
+        return 'error'
+
+def duyet_job(type_job, token, uid):
+    try:
+        r = requests.get(f'https://traodoisub.com/api/coin/?type={type_job}&id={uid}&access_token={token}', headers=headers, timeout=5).json()
+        if "cache" in r:
+            return r['cache']                # trả về số lần cache (int)
+        elif "success" in r:
+            dai = f'{Colors.yellow}------------------------------------------'
+            print(dai)
+            print(f"{Colors.cyan}Nhận thành công {r['data']['job_success']} nhiệm vụ | {Colors.green}{r['data']['msg']} | {Colors.yellow}{r['data']['xu']}")
+            print(dai)
+            return 'success'                 # ✅ sửa: trả về success thay vì error
+        else:
+            print(f"{Colors.red}{r['error']}")
+            return 'error'
+    except:
+        return 'error'
+
+def check_tiktok(id_tiktok, token):
+    try:
+        r = requests.get('https://traodoisub.com/api/?fields=tiktok_run&id='+id_tiktok+'&access_token='+token, headers=headers, timeout=5).json()
+        if 'success' in r:
+            os.system('clear')
+            print(Colors.green + f"{r['data']['msg']}|ID: {Colors.yellow + r['data']['id'] + Colors.green}")
+            return 'success'
+        else:
+            print(Colors.red + f"{r['error']}\n")
+            return 'error_token'
+    except:
+        return 'error'
+
+os.system('clear')
+banner = r'''
+██╗  ██╗███╗   ███╗██╗  ██╗
+██║  ██║████╗ ████║██║ ██╔╝
+███████║██╔████╔██║█████╔╝
+██╔══██║██║╚██╔╝██║██╔═██╗
+██║  ██║██║ ╚═╝ ██║██║  ██╗
+╚═╝  ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝
+
+════════════════════════════
+          HMK TOOL
+════════════════════════════
+'''
+gach  = '========================================='
+option = f'''{gach}{Colors.green}
+Danh sách nhiệm vu: {Colors.red}
+1. Follow
+2. Tym
+{Colors.yellow}{gach}
+'''
+option_acc = f'''{gach}{Colors.green}
+Danh sách lựa chọn: {Colors.red}
+1. Sử dụng acc TDS đã lưu
+2. Sử dụng acc TDS mới
+{Colors.yellow}{gach}
+'''
+print(Colorate.Horizontal(Colors.yellow_to_red, Center.XCenter(banner)))
+print(Colors.red + Center.XCenter(Box.DoubleCube("Tool TDS tiktok free version 1.0")))
+
+while True:
+    try:
+        f = open('TDS.txt','r')
+        token_tds = f.read()
+        f.close()
+        cache = 'old'
+    except FileNotFoundError:
+        token_tds = Write.Input("Nhập token TDS:", Colors.green_to_yellow, interval=0.0025)
+        cache = 'new'
+    
+    for _ in range(3):
+        check_log = login_tds(token_tds)
+        if check_log == 'success' or check_log == 'error_token':
+            break
+        else:
+            sleep(2)
+
+    if check_log == 'success':
+        if cache == 'old':
+            while True:
+                print(option_acc)
+                try:
+                    choice = int(Write.Input("Lựa chọn của cậu là:", Colors.green_to_yellow, interval=0.0025))
+                    if choice in [1,2]:
+                        break
+                    else:
+                        os.system('clear')
+                        print(Colors.red + f"Lỗi lựa chọn!!! Chỉ nhập 1 hoặc 2\n")
+                except:
+                    os.system('clear')
+                    print(Colors.red + f"Lỗi lựa chọn!!! Chỉ nhập 1 hoặc 2\n")
+            
+            os.system('clear')
+            if choice == 1:
+                break
+            else:
+                os.remove('TDS.txt')
+        else:
+            with open('TDS.txt', 'w') as f:
+                f.write(token_tds)
+            break
+    else:
+        sleep(1)
+        os.system('clear')
+
+if check_log == 'success':
+    # Nhập user tiktok
+    while True:
+        id_tiktok = Write.Input("Nhập ID tiktok:", Colors.green_to_yellow, interval=0.0025)
+        for _ in range(3):
+            check_log = check_tiktok(id_tiktok, token_tds)
+            if check_log == 'success' or check_log == 'error_token':
+                break
+            else:
+                sleep(2)
+
+        if check_log == 'success':
+            break
+        elif check_log == 'error_token':
+            os.system('clear')
+            print(Colors.red + f"ID tiktok chưa được thêm vào cấu hình, vào cấu hình rồi nhập lại!\n")
+        else:
+            os.system('clear')
+            print(Colors.red + f"Lỗi sever vui nhập lại!\n")
+
+    # Lựa chọn nhiệm vụ
+    while True:
+        print(option)
+        try:
+            choice = int(Write.Input("Lựa chọn nhiệm vụ muốn làm:", Colors.green_to_yellow, interval=0.0025))
+            if choice in [1,2]:
+                break
+            else:
+                os.system('clear')
+                print(Colors.red + f"Lỗi lựa chọn!!! Chỉ nhập 1 hoặc 2\n")
+        except:
+            os.system('clear')
+            print(Colors.red + f"Lỗi lựa chọn!!! Chỉ nhập 1 hoặc 2\n")
+
+    # Nhập delay
+    while True:
+        try:
+            delay = int(Write.Input("Thời gian delay (giây):", Colors.green_to_yellow, interval=0.0025))
+            if delay >= 3:
+                break
+            else:
+                os.system('clear')
+                print(Colors.red + f"Delay tối thiểu là 3 giây\n")
+        except:
+            os.system('clear')
+            print(Colors.red + f"Hãy nhập một số >= 3\n")
+
+    # Nhập max nhiệm vụ
+    while True:
+        try:
+            max_job = int(Write.Input("Bao nhiêu nhiệm vụ dừng tool:", Colors.green_to_yellow, interval=0.0025))
+            if max_job >= 10:
+                break
+            else:
+                os.system('clear')
+                print(Colors.red + f"Tối thiểu là 10\n")
+        except:
+            os.system('clear')
+            print(Colors.red + f"Hãy nhập một số >= 10\n")
+
+    os.system('clear')
+
+    if choice == 1:
+        type_load = 'tiktok_follow'
+        type_duyet = 'TIKTOK_FOLLOW_CACHE'
+        type_nhan = 'TIKTOK_FOLLOW'
+        type_type = 'FOLLOW'
+        api_type = 'TIKTOK_FOLLOW_API'
+    elif choice == 2:
+        type_load = 'tiktok_like'
+        type_duyet = 'TIKTOK_LIKE_CACHE'
+        type_nhan = 'TIKTOK_LIKE'
+        api_type = 'TIKTOK_LIKE_API'
+        type_type = 'TYM'
+
+    dem_tong = 0
+
+    while True:
+        list_job = load_job(type_load, token_tds)
+        sleep(2)
+        if isinstance(list_job, dict) and list_job.get('data'):
+            for job in list_job['data']:
+                uid = job['id']
+                link = job['link']
+                # Mở link bằng webbrowser thay vì termux-open-url
+                webbrowser.open(link)
+                
+                check_duyet = duyet_job(type_duyet, token_tds, uid)
+                
+                # ✅ Chỉ tính khi kết quả không phải lỗi
+                if check_duyet not in ['error', 'error_countdown', 'error_error']:
+                    dem_tong += 1
+                    t_now = datetime.now().strftime("%H:%M:%S")
+                    # ✅ Dùng màu có sẵn trong pystyle
+                    print(f'{Colors.yellow}[{dem_tong}] {Colors.red}| {Colors.cyan}{t_now} {Colors.red}| {Colors.purple}{type_type} {Colors.red}| {Colors.white}{uid}')
+
+                    # ✅ Chỉ xử lý nếu check_duyet là số (cache > 9)
+                    if isinstance(check_duyet, int) and check_duyet > 9:
+                        sleep(3)
+                        # ✅ SỬA LỖI QUAN TRỌNG: gọi đúng uid, không phải api_type
+                        duyet_job(type_nhan, token_tds, uid)
+
+                if dem_tong == max_job:
+                    break
+                else:
+                    for i in range(delay, -1, -1):
+                        print(Colors.green + f'HMK: {i} giây', end='\r')
+                        sleep(1)
+            # ✅ Nếu đã đạt đủ job thì thoát vòng lặp ngoài
+            if dem_tong == max_job:
+                break
+        else:
+            # Không còn job hoặc có lỗi -> thoát để tránh vòng lặp vô hạn
+            print(Colors.red + "Hết nhiệm vụ hoặc lỗi kết nối. Thoát tool.")
+            break
+
+    print(f'{Colors.green}Hoàn thành {max_job} nhiệm vụ!')
